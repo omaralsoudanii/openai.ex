@@ -106,6 +106,18 @@ defmodule OpenAI.Stream do
       "data: [DONE]", acc ->
         {[], acc}
 
+      "event: " <> data, acc ->
+        {res, decoded} =
+          String.split(data, "\n")
+          |> List.last()
+          |> String.replace_prefix("data: ", "")
+          |> Jason.decode()
+
+        case res do
+          :ok -> {[decoded], acc}
+          :error -> {[], acc}
+        end
+
       "data: " <> data, acc ->
         data = Jason.decode!(data)
         {[data], acc}
